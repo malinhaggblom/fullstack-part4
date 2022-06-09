@@ -19,46 +19,42 @@ blogsRouter.get('/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-blogsRouter.post('/', (request, response, next) => {
+blogsRouter.post('/', async (request, response) => {
   const body = request.body
 
   const blog = new Blog({
     title: body.title,
     author: body.author,
     url: body.url,
-    likes: body.likes
+    likes: body.likes === undefined ? 0 : body.likes,
   })
-
-  blog.save()
-    .then(savedBlog => {
-      response.json(savedBlog)
-    })
-    .catch(error => next(error))
+  if (body.title === undefined || body.url === undefined) {
+    return response.status(400).json({ error: 'Title or url missing' })
+  }
+  const savedBlog = await blog.save()
+  response.status(200).json(savedBlog)
 })
 
-blogsRouter.delete('/:id', (request, response, next) => {
-  Blog.findByIdAndRemove(request.params.id)
-    .then(() => {
+blogsRouter.delete('/:id', async (request, response, next) => {
+  try{
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+
+    const blog = await Blog.findById(request.params.id)
+      await Blog.findByIdAndRemove(request.params.id)
       response.status(204).end()
-    })
-    .catch(error => next(error))
+  } catch(exception) {
+    next(exception)
+  }
 })
 
 blogsRouter.put('/:id', (request, response, next) => {
   const body = request.body
-
   const blog = {
     title: body.title,
     author: body.author,
     url: body.url,
-    likes: body.likes,
+    likes: body.likes
   }
-
-  Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
-    .then(updatedBlog => {
-      response.json(updatedBlog)
-    })
-    .catch(error => next(error))
 })
 
 module.exports = blogsRouter
