@@ -3,7 +3,7 @@ Content-Type: application/json
 
 {
   "title": "Rain and even more rain",
-  "author": "Malin",
+  "author": "Superuser",
   "url": "www.thisandthis.com",
   "likes": 1
 }

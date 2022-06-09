@@ -5,6 +5,12 @@ const User = require('../models/user')
 usersRouter.post('/', async (request, response) => {
   const { username, name, password } = request.body
 
+  if (username === undefined || password === undefined || username.length < 3 || password.length < 3) {
+    return response.status(400).json({
+      error: 'Username or password missing or length is less than 3 characters'
+    })
+  }
+
   const existingUser = await User.findOne({ username })
   if (existingUser) {
     return response.status(400).json({
@@ -27,8 +33,10 @@ usersRouter.post('/', async (request, response) => {
 })
 
 usersRouter.get('/', async (request, response) => {
-    const users = await User.find({})
-    response.json(users)
+  const users = await User
+  .find({}).populate('blogs', { title: 1, likes: 1 })
+  
+  response.json(users)
   })
 
 module.exports = usersRouter
